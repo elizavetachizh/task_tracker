@@ -140,13 +140,14 @@ export class TasksService {
 
   async move(id: string, dto: MoveTaskDto): Promise<TaskView> {
     const task = await this.getTask(id);
-
-    if (task.status !== dto.status) {
-      task.status = dto.status;
-      task.position = await this.nextPosition(dto.status);
+    if (task.status === dto.status) {
+      return this.toView(task);
     }
 
+    task.status = dto.status;
+    task.position = await this.nextPosition(dto.status);
     const saved = await this.tasks.save(task);
+
     return this.toView(saved);
   }
 }

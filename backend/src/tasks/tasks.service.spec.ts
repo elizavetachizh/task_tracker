@@ -97,6 +97,21 @@ describe('TasksService', () => {
 
     expect(repository.save).not.toHaveBeenCalled();
     expect(repository.create).not.toHaveBeenCalled();
+    expect(repository.createQueryBuilder).not.toHaveBeenCalled();
+  });
+
+  it('places the first task in an empty column at position 1', async () => {
+    queryBuilder.getRawOne.mockResolvedValue({ max: null });
+
+    const view = await service.create({ title: 'Первая' });
+
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: TaskStatus.New,
+        position: 1,
+      }),
+    );
+    expect(view.position).toBe(1);
   });
 
   it('updates title and priority without writing a new status', async () => {
@@ -153,9 +168,8 @@ describe('TasksService', () => {
     const view = await service.move(taskId, { status: TaskStatus.Done });
 
     expect(repository.createQueryBuilder).not.toHaveBeenCalled();
-    const saved = repository.save.mock.calls[0][0] as Task;
-    expect(saved.status).toBe(TaskStatus.Done);
-    expect(saved.position).toBe(3);
+    expect(repository.save).not.toHaveBeenCalled();
+    expect(view.status).toBe(TaskStatus.Done);
     expect(view.position).toBe(3);
   });
 
@@ -169,6 +183,19 @@ describe('TasksService', () => {
       NotFoundException,
     );
     expect(repository.remove).not.toHaveBeenCalled();
+  });
+
+  it('throws NotFoundException when updating or moving a missing task', async () => {
+    repository.findOne.mockResolvedValue(null);
+
+    await expect(
+      service.update(taskId, { title: 'Новое' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.move(taskId, { status: TaskStatus.InProgress }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(repository.save).not.toHaveBeenCalled();
   });
 
   it('rejects an empty update', async () => {

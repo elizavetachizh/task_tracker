@@ -55,15 +55,18 @@ describe('CreateTaskDto', () => {
 
     expect(errors.some((error) => error.property === 'title')).toBe(true);
   });
+
+  it('rejects a description longer than 2000 characters', async () => {
+    const { errors } = await parse(CreateTaskDto, {
+      title: 'Название',
+      description: 'а'.repeat(2001),
+    });
+
+    expect(errors.some((error) => error.property === 'description')).toBe(true);
+  });
 });
 
 describe('UpdateTaskDto', () => {
-  it('rejects an empty body', async () => {
-    const { errors } = await parse(UpdateTaskDto, {});
-
-    expect(errors.length).toBeGreaterThan(0);
-  });
-
   it('trims title and clears description', async () => {
     const { dto, errors } = await parse(UpdateTaskDto, {
       title: '  Новое  ',

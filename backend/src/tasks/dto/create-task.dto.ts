@@ -7,19 +7,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { TaskPriority } from '../enums/task-priority.enum.js';
-
-function trimString({ value }: { value: unknown }): unknown {
-  return typeof value === 'string' ? value.trim() : value;
-}
-
-function trimEmptyToNull({ value }: { value: unknown }): unknown {
-  if (typeof value !== 'string') {
-    return value;
-  }
-
-  const trimmed = value.trim();
-  return trimmed === '' ? null : trimmed;
-}
+import { trimEmptyToNull, trimString } from './trim.js';
 
 export class CreateTaskDto {
   @Transform(trimString)
