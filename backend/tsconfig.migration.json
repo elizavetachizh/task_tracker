@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "incremental": false
+  },
+  "include": [
+    "src/data-source.ts",
+    "src/tasks/entities/**/*.ts",
+    "src/tasks/enums/**/*.ts",
+    "src/migrations/**/*.ts"
+  ]
+}
