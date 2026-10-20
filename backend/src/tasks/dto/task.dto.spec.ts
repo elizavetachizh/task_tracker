@@ -2,7 +2,9 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { describe, expect, it } from 'vitest';
 import { TaskPriority } from '../enums/task-priority.enum.js';
+import { TaskStatus } from '../enums/task-status.enum.js';
 import { CreateTaskDto } from './create-task.dto.js';
+import { MoveTaskDto } from './move-task.dto.js';
 import { UpdateTaskDto } from './update-task.dto.js';
 
 async function parse<T extends object>(cls: new () => T, plain: object) {
@@ -83,6 +85,38 @@ describe('UpdateTaskDto', () => {
     const { errors } = await parse(UpdateTaskDto, {
       title: 'Новое',
       status: 'done',
+    });
+
+    expect(errors.length).toBeGreaterThan(0);
+  });
+});
+
+describe('MoveTaskDto', () => {
+  it('accepts a column status', async () => {
+    const { dto, errors } = await parse(MoveTaskDto, {
+      status: TaskStatus.InProgress,
+    });
+
+    expect(errors).toEqual([]);
+    expect(dto.status).toBe(TaskStatus.InProgress);
+  });
+
+  it('rejects a missing or unknown status', async () => {
+    const missing = await parse(MoveTaskDto, {});
+    const unknown = await parse(MoveTaskDto, { status: 'urgent' });
+
+    expect(missing.errors.some((error) => error.property === 'status')).toBe(
+      true,
+    );
+    expect(unknown.errors.some((error) => error.property === 'status')).toBe(
+      true,
+    );
+  });
+
+  it('rejects an extra field', async () => {
+    const { errors } = await parse(MoveTaskDto, {
+      status: TaskStatus.Done,
+      position: 1,
     });
 
     expect(errors.length).toBeGreaterThan(0);
